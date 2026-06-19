@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Oficios 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --border: #2e2e2e;
+    --accent: #e63946;
+    --accent-dim: #7a1a21;
+    --gold: #c9a84c;
+    --text: #d4d4d4;
+    --text-muted: #666;
+    --used: #e63946;
+    --used-bg: #2a0a0d;
+    --free: #2e2e2e;
+    --free-hover: #3a3a3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    flex: 1;
+  }
+
+  .badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+  }
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+    gap: 2px;
+    padding: 0 8px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 10px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  .panel { display: none; padding: 16px; }
+  .panel.active { display: block; }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--gold);
+  }
+
+  .stats {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 12px;
+  }
+  .stats span { color: var(--text); }
+  .stats .used-count { color: var(--accent); }
+
+  .next-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-radius: 2px;
+  }
+  .next-info strong {
+    font-size: 22px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+
+  .number-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    max-width: 700px;
+  }
+
+  .num-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--free);
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-size: clamp(9px, 2.5vw, 13px);
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.1s;
+    user-select: none;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .num-cell:hover {
+    background: var(--free-hover);
+    color: var(--text);
+    transform: scale(1.05);
+  }
+  .num-cell.used {
+    background: var(--used-bg);
+    border-color: var(--accent-dim);
+    color: var(--used);
+    cursor: default;
+    text-decoration: line-through;
+    transform: none;
+  }
+  .num-cell.used:hover { background: var(--used-bg); }
+
+  .expand-btn {
+    display: block;
+    margin: 14px 0 0;
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    padding: 8px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    width: 100%;
+    max-width: 700px;
+  }
+  .expand-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    padding: 24px;
+    max-width: 280px;
+    width: 90%;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .modal h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .modal p { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .modal .num-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 18px;
+  }
+  .modal-btns { display: flex; gap: 8px; justify-content: center; }
+  .btn {
+    padding: 8px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-confirm { background: var(--accent); color: #fff; }
+  .btn-cancel { background: var(--border); color: var(--text); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    z-index: 300;
+    transition: transform 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Registro Oficial</h1>
+  <span class="badge">2026</span>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div id="panels"></div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3>MARCAR USADO</h3>
+    <p id="modal-section-name">Resoluciones</p>
+    <div class="num-big" id="modal-num">—</div>
+    <p>Confirmar este n&uacute;mero como utilizado?</p>
+    <div class="modal-btns">
+      <button class="btn btn-cancel" onclick="closeModal()">CANCELAR</button>
+      <button class="btn btn-confirm" onclick="confirmMark()">CONFIRMAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'registro_oficios_2026_v2';
+
+const defaultSections = [
+  {
+    id: 'resoluciones',
+    name: 'RESOLUCIONES',
+    startAt: 1,
+    blockSize: 50,
+    initialUsed: [
+      1,2,3,4,5,6,7,8,9,10,
+      11,12,13,14,15,16,17,18,19,20,
+      21,22,23,24,25,26,27,28,29,30,
+      31,32,33,34,35,36,37,38,39,40,
+      41,42,43,44,45,46,47,48,49,50,
+      51,52,53,54,55,56,57,58,59,60,
+      61,62,63,64,65,66,67,68,69,70
+    ]
+  },
+  {
+    id: 'oficios',
+    name: 'OFICIOS',
+    startAt: 670,
+    blockSize: 50,
+    initialUsed: [670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693]
+  },
+  {
+    id: 'requerimientos',
+    name: 'REQUERIMIENTOS',
+    startAt: 1,
+    blockSize: 50,
+    initialUsed: [
+      1,2,3,4,5,6,7,8,9,10,
+      11,12,13,14,15,16,17,18,19,20,
+      21,22,23,24,25,26,27,28,29,30,
+      31,32,33,34,35,36,37,38,39,40,
+      41,42,43,44,45,46,47,48,49,50,
+      51,52,53,54,55,56,57,58,59,60,
+      61,62,63,64,65,66,67,68,69,70,
+      71,72,73,74,75,76,77,78,79,80,
+      81,82,83,84,85,86,87,88,89,90,
+      91,92,93,94,95,96,97,98,99,100,
+      101,102,103,104,105,106,107,108,109,110,
+      111,112,113,114,115,116,117,118,119,120,
+      121,122,123,124,125,126,127,128,129,130,131
+    ]
+  },
+  {
+    id: 'acusaciones',
+    name: 'ACUSACIONES',
+    startAt: 1,
+    blockSize: 50,
+    initialUsed: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+  },
+  {
+    id: 'imputaciones',
+    name: 'IMPUTACIONES',
+    startAt: 1,
+    blockSize: 50,
+    initialUsed: [1,2,3,4,5,6,7,8,9,10,11,12]
+  },
+  {
+    id: 'notas',
+    name: 'NOTAS',
+    startAt: 1,
+    blockSize: 50,
+    initialUsed: [
+      1,2,3,4,5,6,7,8,9,10,
+      11,12,13,14,15,16,17,18,19,20,
+      21,22,23,24,25,26,27,28,29,30,
+      31,32,33,34,35,36,37,38,39,40,
+      41,42,43,44,45,46,47,48,49,50,
+      51,52,53,54,55,56,57,58,59,60
+    ]
+  }
+];
+
+let state = loadState();
+let pendingAction = null;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  const s = {};
+  defaultSections.forEach(sec => {
+    s[sec.id] = {
+      used: new Set(sec.initialUsed),
+      visibleCount: Math.max(sec.initialUsed.length + 20, 50)
+    };
+  });
+  return s;
+}
+
+function saveState() {
+  const toSave = {};
+  Object.keys(state).forEach(id => {
+    toSave[id] = {
+      used: [...state[id].used],
+      visibleCount: state[id].visibleCount
+    };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
+function getState(id) {
+  if (!state[id]) {
+    const sec = defaultSections.find(s => s.id === id);
+    state[id] = {
+      used: new Set(sec.initialUsed),
+      visibleCount: Math.max(sec.initialUsed.length + 20, 50)
+    };
+  }
+  if (!(state[id].used instanceof Set)) {
+    state[id].used = new Set(state[id].used);
+  }
+  return state[id];
+}
+
+function getNextFree(sectionId) {
+  const sec = defaultSections.find(s => s.id === sectionId);
+  const { used } = getState(sectionId);
+  let n = sec.startAt;
+  while (used.has(n)) n++;
+  return n;
+}
+
+function buildUI() {
+  const tabsEl = document.getElementById('tabs');
+  const panelsEl = document.getElementById('panels');
+  tabsEl.innerHTML = '';
+  panelsEl.innerHTML = '';
+
+  defaultSections.forEach((sec, idx) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (idx === 0 ? ' active' : '');
+    tab.textContent = sec.name;
+    tab.dataset.id = sec.id;
+    tab.onclick = () => switchTab(sec.id);
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'panel' + (idx === 0 ? ' active' : '');
+    panel.id = 'panel-' + sec.id;
+    panelsEl.appendChild(panel);
+    renderPanel(sec.id);
+  });
+}
+
+function renderPanel(sectionId) {
+  const sec = defaultSections.find(s => s.id === sectionId);
+  const { used, visibleCount } = getState(sectionId);
+  const panel = document.getElementById('panel-' + sectionId);
+
+  const nextFree = getNextFree(sectionId);
+  const numbers = [];
+  for (let i = 0; i < visibleCount; i++) {
+    numbers.push(sec.startAt + i);
+  }
+
+  const usedArr = [...used];
+  const totalUsed = used.size;
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <div class="panel-title">${sec.name}</div>
+      <div class="stats">
+        <div>USADOS: <span class="used-count">${totalUsed}</span></div>
+        <div>PR&Oacute;XIMO: <span>${nextFree}</span></div>
+      </div>
+    </div>
+    <div class="next-info">
+      <span>SIGUIENTE DISPONIBLE</span>
+      <strong>${nextFree}</strong>
+      <span style="color:var(--text-muted);font-size:10px;">← t&oacute;calo en la grilla para marcarlo</span>
+    </div>
+    <div class="number-grid" id="grid-${sectionId}">
+      ${numbers.map(n => `
+        <div class="num-cell ${used.has(n) ? 'used' : ''}"
+             data-n="${n}"
+             data-sec="${sectionId}"
+             onclick="cellClick(this)">
+          ${n}
+        </div>
+      `).join('')}
+    </div>
+    <button class="expand-btn" onclick="expandSection('${sectionId}')">
+      ＋ CARGAR M&Aacute;S N&Uacute;MEROS
+    </button>
+  `;
+}
+
+function switchTab(sectionId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.id === sectionId));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + sectionId));
+}
+
+function expandSection(sectionId) {
+  const sec = defaultSections.find(s => s.id === sectionId);
+  const st = getState(sectionId);
+  st.visibleCount += sec.blockSize;
+  saveState();
+  renderPanel(sectionId);
+}
+
+function cellClick(el) {
+  if (el.classList.contains('used')) return;
+  const n = parseInt(el.dataset.n);
+  const sectionId = el.dataset.sec;
+  const sec = defaultSections.find(s => s.id === sectionId);
+
+  pendingAction = { sectionId, number: n };
+  document.getElementById('modal-num').textContent = n;
+  document.getElementById('modal-section-name').textContent = sec.name;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  pendingAction = null;
+}
+
+function confirmMark() {
+  if (!pendingAction) return;
+  const { sectionId, number } = pendingAction;
+  const st = getState(sectionId);
+  st.used.add(number);
+
+  const sec = defaultSections.find(s => s.id === sectionId);
+  const maxVisible = sec.startAt + st.visibleCount - 1;
+  if (number >= maxVisible - 5) {
+    st.visibleCount += sec.blockSize;
+  }
+
+  saveState();
+  closeModal();
+  renderPanel(sectionId);
+
+  const next = getNextFree(sectionId);
+  showToast(`#${number} marcado ✓  —  PR&Oacute;XIMO: ${next}`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+buildUI();
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
