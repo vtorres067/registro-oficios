@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Registro">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
@@ -564,11 +564,11 @@ function switchTab(sectionId) {
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + sectionId));
 }
 
-function expandSection(sectionId) {
+async function expandSection(sectionId) {
   const sec = defaultSections.find(s => s.id === sectionId);
   const st = getState(sectionId);
   st.visibleCount += sec.blockSize;
-  saveToSupabase(sectionId);
+  await saveToSupabase(sectionId);
   renderPanel(sectionId);
 }
 
@@ -603,6 +603,7 @@ async function confirmMark() {
 
   await saveToSupabase(sectionId);
   closeModal();
+  renderPanel(sectionId);
 
   const next = getNextFree(sectionId);
   showToast(`#${number} marcado ✓  —  PR&Oacute;XIMO: ${next}`);
